@@ -11,17 +11,11 @@ import {
 import { api as dicomwebClientApi } from 'dicomweb-client';
 import vtkVolume from 'vtk.js/Sources/Rendering/Core/Volume';
 import vtkVolumeMapper from 'vtk.js/Sources/Rendering/Core/VolumeMapper';
+import './mpr.css'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faEyeSlash, faEye, faUndoAlt, faSearchPlus, faCrosshairs } from '@fortawesome/free-solid-svg-icons'
 
-const url = 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs';
-
-const studyInstanceUID =
-  '1.3.12.2.1107.5.2.32.35162.30000015050317233592200000046';
-const mrSeriesInstanceUID =
-  '1.3.12.2.1107.5.2.32.35162.1999123112191238897317963.0.0.0';
-
-const searchInstanceOptions = {
-  studyInstanceUID,
-};
+const url = 'http://192.168.222.101:8080/dcm4chee-arc/aets/AS_RECEIVED/rs';
 
 function loadDataset(imageIds, displaySetInstanceUid) {
   const imageDataObject = getImageData(imageIds, displaySetInstanceUid);
@@ -30,7 +24,7 @@ function loadDataset(imageIds, displaySetInstanceUid) {
   return imageDataObject;
 }
 
-function createStudyImageIds(baseUrl, studySearchOptions) {
+function createStudyImageIds(baseUrl, studySearchOptions, studyInstanceUID) {
   const SOP_INSTANCE_UID = '00080018';
   const SERIES_INSTANCE_UID = '0020000E';
 
@@ -68,12 +62,20 @@ class VTKRotatableCrosshairsExample extends Component {
     volumes: [],
     displayCrosshairs: true,
     crosshairsTool: true,
+    studyUid: this.props.parentStudyUid,
+    seriesUid: this.props.parentSeriesUid,
+    slabThickness: 0
   };
+
 
   async componentDidMount() {
     this.apis = [];
-
-    const imageIds = await createStudyImageIds(url, searchInstanceOptions);
+    const studyInstanceUID = this.state.studyUid;
+    const mrSeriesInstanceUID = this.state.seriesUid;
+    const searchInstanceOptions = {
+      studyInstanceUID,
+    };
+    const imageIds = await createStudyImageIds(url, searchInstanceOptions, studyInstanceUID);
 
     let ctImageIds = imageIds.filter(imageId =>
       imageId.includes(mrSeriesInstanceUID)
@@ -160,7 +162,7 @@ class VTKRotatableCrosshairsExample extends Component {
     const value = evt.target.value;
     const valueInMM = value / 10;
     const apis = this.apis;
-
+    this.setState({ slabThickness: valueInMM })
     apis.forEach(api => {
       const renderWindow = api.genericRenderWindow.getRenderWindow();
 
@@ -172,7 +174,6 @@ class VTKRotatableCrosshairsExample extends Component {
   toggleTool = () => {
     let { crosshairsTool } = this.state;
     const apis = this.apis;
-
     crosshairsTool = !crosshairsTool;
 
     apis.forEach((api, apiIndex) => {
@@ -223,43 +224,64 @@ class VTKRotatableCrosshairsExample extends Component {
 
   render() {
     if (!this.state.volumes || !this.state.volumes.length) {
-      return <h4>Loading...</h4>;
+      return <div className="loading"><h4>Loading...</h4></div>;
     }
 
     return (
-      <>
-        <div className="row">
-          <div className="col-xs-4">
-            <p>
-              This example demonstrates how to use the Crosshairs manipulator.
-            </p>
-            <label htmlFor="set-slab-thickness">SlabThickness: </label>
-            <input
-              id="set-slab-thickness"
-              type="range"
-              name="points"
-              min="1"
-              max="5000"
-              onChange={this.handleSlabThicknessChange.bind(this)}
-            />
-          </div>
-          <div className="col-xs-4">
-            <p>Click bellow to toggle crosshairs on/off.</p>
-            <button onClick={this.toggleCrosshairs}>
-              {this.state.displayCrosshairs
-                ? 'Hide Crosshairs'
-                : 'Show Crosshairs'}
-            </button>
-            <button onClick={this.toggleTool}>
-              {this.state.crosshairsTool
-                ? 'Switch To WL/Zoom/Pan/Scroll'
-                : 'Switch To Crosshairs'}
-            </button>
-            <button onClick={this.resetCrosshairs}>reset crosshairs</button>
+      <div className="row">
+        <div className="container-fluid toolbar-series">
+
+          <div className="btn-group-toolbar">
+            <span className="toolbar-group">
+              <button onClick={this.toggleCrosshairs} disabled={!this.state.displayCrosshairs} className="btn  btn-default">
+                <span><FontAwesomeIcon icon={faEyeSlash} /></span>
+                <div className="toolbar-icon-text">Hide Crosshairs</div>
+              </button>
+            </span>
+
+            <span className="toolbar-group">
+              <button onClick={this.toggleCrosshairs} disabled={this.state.displayCrosshairs} className="btn btn-default">
+                <span><FontAwesomeIcon icon={faEye} /></span>
+                <div className="toolbar-icon-text">Show Crosshairs</div>
+              </button>
+            </span>
+
+
+            <span className="toolbar-group">
+              <button onClick={this.toggleTool} disabled={!this.state.crosshairsTool} className="btn btn-default">
+                <span><FontAwesomeIcon icon={faSearchPlus} /></span>
+                <div className="toolbar-icon-text">WL/Zoom/Pan/Scroll</div>
+              </button>
+            </span>
+
+            <span className="toolbar-group">
+              <button onClick={this.toggleTool} disabled={this.state.crosshairsTool} className="btn  btn-default">
+                <span><FontAwesomeIcon icon={faCrosshairs} /></span>
+                <div className="toolbar-icon-text">Crosshair</div>
+              </button>
+            </span>
+
+            <span className="toolbar-group">
+              <button onClick={this.resetCrosshairs} className="btn  btn-default">
+                <span><FontAwesomeIcon icon={faUndoAlt} /></span>
+                <div className="toolbar-icon-text">Reset Crosshair</div>
+              </button>
+            </span>
+            <div className="slab">
+              <label htmlFor="set-slab-thickness" >SlabThickness: {this.state.slabThickness} mm </label>
+              <input
+                id="set-slab-thickness"
+                type="range"
+                name="points"
+                min="1"
+                max="2000"
+                onChange={this.handleSlabThicknessChange.bind(this)}
+              />
+            </div>
           </div>
         </div>
-        <div className="row">
-          <div className="col-sm-4">
+        <div className="row cntr" >
+          <div className="col-sm-4 viewer" >
             <View2D
               volumes={this.state.volumes}
               onCreated={this.storeApi(0)}
@@ -267,7 +289,7 @@ class VTKRotatableCrosshairsExample extends Component {
               showRotation={true}
             />
           </div>
-          <div className="col-sm-4">
+          <div className="col-sm-4 viewer" >
             <View2D
               volumes={this.state.volumes}
               onCreated={this.storeApi(1)}
@@ -275,7 +297,7 @@ class VTKRotatableCrosshairsExample extends Component {
               showRotation={true}
             />
           </div>
-          <div className="col-sm-4">
+          <div className="col-sm-4 viewer" >
             <View2D
               volumes={this.state.volumes}
               onCreated={this.storeApi(2)}
@@ -284,7 +306,7 @@ class VTKRotatableCrosshairsExample extends Component {
             />
           </div>
         </div>
-      </>
+      </div>
     );
   }
 }

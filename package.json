@@ -22,12 +22,15 @@
     "prepublishOnly": "yarn run build && yarn run build:release"
   },
   "peerDependencies": {
+    "cornerstone-tools": "^4.20.1",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "vtk.js": "^11.14.0",
-    "cornerstone-tools": "^4.20.1"
+    "vtk.js": "^11.14.0"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.34",
+    "@fortawesome/free-solid-svg-icons": "^5.15.2",
+    "@fortawesome/react-fontawesome": "^0.1.14",
     "date-fns": "^2.2.1",
     "gl-matrix": "^3.1.0"
   },

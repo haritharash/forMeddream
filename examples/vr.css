@@ -1,0 +1,65 @@
+.cntr{
+  border: solid;
+  border-color: white;
+  border-width: 1px;
+  padding: 0px;
+  width: 100%;
+}
+
+.loading{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: white;
+}
+
+h5{
+  color: white;
+}
+.box-center{
+  padding-top: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 670px;
+
+}
+
+.btn-group button {
+  background-color: transparent; /* Green background */
+  border: 1px solid transparent; /* Green border */
+  color: #9CCEF9; /* White text */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  float: left; /* Float the buttons side by side */
+  border-radius: 10px;
+  width: 25%;
+  height: 90px;
+  font-size: 10pt;
+  padding-top: 4px
+}
+
+.btn-group button:not(:last-child) {
+  border-right: none; /* Prevent double borders */
+}
+
+/* Clear floats (clearfix hack) */
+.btn-group:after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+  color: white;
+}
+
+.btn-container{
+  padding-top: 5px;
+  color: white;
+  width: 40%;
+  float: left;
+}

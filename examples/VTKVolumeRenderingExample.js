@@ -10,17 +10,11 @@ import vtkColorTransferFunction from 'vtk.js/Sources/Rendering/Core/ColorTransfe
 import vtkPiecewiseFunction from 'vtk.js/Sources/Common/DataModel/PiecewiseFunction';
 import vtkColorMaps from 'vtk.js/Sources/Rendering/Core/ColorTransferFunction/ColorMaps';
 import presets from './presets.js';
-
+import './vr.css'
 window.cornerstoneWADOImageLoader = cornerstoneWADOImageLoader;
 
-const url = 'https://server.dcmjs.org/dcm4chee-arc/aets/DCM4CHEE/rs';
-const studyInstanceUID =
-  '1.3.6.1.4.1.14519.5.2.1.2744.7002.373729467545468642229382466905';
-const ctSeriesInstanceUID =
-  '1.3.6.1.4.1.14519.5.2.1.2744.7002.182837959725425690842769990419';
-const searchInstanceOptions = {
-  studyInstanceUID,
-};
+const url = 'http://192.168.222.101:8080/dcm4chee-arc/aets/AS_RECEIVED/rs';
+
 
 function createActorMapper(imageData) {
   const mapper = vtkVolumeMapper.newInstance();
@@ -196,7 +190,7 @@ function createCT3dPipeline(imageData, ctTransferFunctionPresetId) {
   return actor;
 }
 
-function createStudyImageIds(baseUrl, studySearchOptions) {
+function createStudyImageIds(baseUrl, studySearchOptions, studyInstanceUID) {
   const SOP_INSTANCE_UID = '00080018';
   const SERIES_INSTANCE_UID = '0020000E';
 
@@ -234,10 +228,19 @@ class VTKFusionExample extends Component {
     volumeRenderingVolumes: null,
     ctTransferFunctionPresetId: 'vtkMRMLVolumePropertyNode4',
     petColorMapId: 'hsv',
+    studyUid: this.props.parentStudyUid,
+    seriesUid: this.props.parentSeriesUid
   };
 
+
+
   async componentDidMount() {
-    const imageIdPromise = createStudyImageIds(url, searchInstanceOptions);
+    const studyInstanceUID = this.state.studyUid
+    const ctSeriesInstanceUID = this.state.seriesUid
+    const searchInstanceOptions = {
+      studyInstanceUID,
+    };
+    const imageIdPromise = createStudyImageIds(url, searchInstanceOptions, studyInstanceUID);
 
     this.apis = [];
 
@@ -267,6 +270,7 @@ class VTKFusionExample extends Component {
 
   handleChangeCTTransferFunction = event => {
     const ctTransferFunctionPresetId = event.target.value;
+    console.log(ctTransferFunctionPresetId)
     const preset = presets.find(
       preset => preset.id === ctTransferFunctionPresetId
     );
@@ -327,14 +331,13 @@ class VTKFusionExample extends Component {
 
   render() {
     if (!this.state.volumeRenderingVolumes) {
-      return <h4>Loading...</h4>;
+      return <div className='loading'><h4 >Loading...</h4></div>;
     }
-
     const ctTransferFunctionPresetOptions = presets.map(preset => {
       return (
-        <option key={preset.id} value={preset.id}>
+        <button type="button" key={preset.id} value={preset.id} onClick={this.handleChangeCTTransferFunction}>
           {preset.name}
-        </option>
+        </button>
       );
     });
 
@@ -344,40 +347,37 @@ class VTKFusionExample extends Component {
 
     return (
       <div className="row">
-        <div className="col-xs-12">
-          <h1>Volume Rendering</h1>
-          <p>This example demonstrates volume rendering of a CT Volume.</p>
-          <p>
-            Images are retrieved via DICOMWeb from a publicly available server
-            and constructed into <code>vtkImageData</code> volumes before they
-            are provided to the component. When each slice arrives, its pixel
-            data is dumped into the proper location in the volume array.
-          </p>
-        </div>
-        <div className="col-xs-12">
-          <div>
-            <label htmlFor="select_CT_xfer_fn">
-              CT Transfer Function Preset (for Volume Rendering):{' '}
-            </label>
-            <select
+
+        <div >
+          <div className='btn-container'>
+            <div >
+              <label htmlFor="select_CT_xfer_fn" >
+                CT Transfer Function Preset (for Volume Rendering):
+              </label>
+            </div>
+            <div
               id="select_CT_xfer_fn"
-              value={this.state.ctTransferFunctionPresetId}
-              onChange={this.handleChangeCTTransferFunction}
-            >
+              // value={this.state.ctTransferFunctionPresetId}
+              // onChange={this.handleChangeCTTransferFunction}
+              className="btn-group" >
               {ctTransferFunctionPresetOptions}
-            </select>
+            </div>
           </div>
+          <div className="box-center">
+            <div className="cntr" >
+              <View3D
+                volumes={this.state.volumeRenderingVolumes}
+                onCreated={this.saveApiReference}
+              />
+            </div>
+          </div>
+
+
         </div>
+        {/*
         <div className="col-xs-12">
-          <h5>{progressString}</h5>
-        </div>
-        <hr />
-        <div className="col-xs-12 col-sm-6">
-          <View3D
-            volumes={this.state.volumeRenderingVolumes}
-            onCreated={this.saveApiReference}
-          />
-        </div>
+          <h5 >{progressString}</h5>
+        </div> */}
       </div>
     );
   }
