@@ -270,7 +270,7 @@ class VTKFusionExample extends Component {
 
   handleChangeCTTransferFunction = event => {
     const ctTransferFunctionPresetId = event.target.value;
-    console.log(ctTransferFunctionPresetId)
+
     const preset = presets.find(
       preset => preset.id === ctTransferFunctionPresetId
     );
@@ -346,39 +346,35 @@ class VTKFusionExample extends Component {
     const progressString = `Progress: ${percentComplete}%`;
 
     return (
-      <div className="row">
 
-        <div >
-          <div className='btn-container'>
-            <div >
-              <label htmlFor="select_CT_xfer_fn" >
-                CT Transfer Function Preset (for Volume Rendering):
-              </label>
-            </div>
-            <div
-              id="select_CT_xfer_fn"
-              // value={this.state.ctTransferFunctionPresetId}
-              // onChange={this.handleChangeCTTransferFunction}
-              className="btn-group" >
-              {ctTransferFunctionPresetOptions}
-            </div>
+      <div className="wrapping" >
+        <div className='btn-container'>
+          <div >
+            <label htmlFor="select_CT_xfer_fn" >
+              CT Transfer Function Preset (for Volume Rendering):
+            </label>
           </div>
-          <div className="box-center">
-            <div className="cntr" >
-              <View3D
-                volumes={this.state.volumeRenderingVolumes}
-                onCreated={this.saveApiReference}
-              />
-            </div>
+          <div
+            id="select_CT_xfer_fn"
+            // value={this.state.ctTransferFunctionPresetId}
+            // onChange={this.handleChangeCTTransferFunction}
+            className="btn-group" >
+            {ctTransferFunctionPresetOptions}
           </div>
-
-
+          <div className="col-xs-12">
+            <h5 >{progressString}</h5>
+          </div>
         </div>
-        {/*
-        <div className="col-xs-12">
-          <h5 >{progressString}</h5>
-        </div> */}
+        <div className="box-center">
+          <div className="cntr" >
+            <View3D
+              volumes={this.state.volumeRenderingVolumes}
+              onCreated={this.saveApiReference}
+            />
+          </div>
+        </div>
       </div>
+
     );
   }
 }
