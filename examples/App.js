@@ -45,7 +45,8 @@ function Index(props) {
 
     return <VTKVolumeRenderingExample parentStudyUid={studyUid} parentSeriesUid={seriesUid} />
   } else {
-    return <Meddream />
+    // return <Meddream />
+    return <h1>No Preview Available</h1>
   }
 
 }

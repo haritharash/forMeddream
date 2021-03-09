@@ -64,7 +64,9 @@ class VTKRotatableCrosshairsExample extends Component {
     crosshairsTool: true,
     studyUid: this.props.parentStudyUid,
     seriesUid: this.props.parentSeriesUid,
-    slabThickness: 0
+    slabThickness: 0,
+    displayPercent: 0,
+    totalFrames: 0,
   };
 
 
@@ -82,7 +84,8 @@ class VTKRotatableCrosshairsExample extends Component {
     );
 
     const ctImageDataObject = loadDataset(ctImageIds, 'ctDisplaySet');
-
+    const numberOfFrames = ctImageIds.length;
+    this.setState({ totalFrames: numberOfFrames })
     const onAllPixelDataInsertedCallback = () => {
       const ctImageData = ctImageDataObject.vtkImageData;
 
@@ -93,10 +96,11 @@ class VTKRotatableCrosshairsExample extends Component {
 
       const mapper = vtkVolumeMapper.newInstance();
       const ctVol = vtkVolume.newInstance();
-      const rgbTransferFunction = ctVol.getProperty().getRGBTransferFunction(0);
+      const rgbTransferFunction = ctVol.getProperty().getRGBTransferFunction(1);
+
 
       mapper.setInputData(ctImageData);
-      mapper.setMaximumSamplesPerRay(2000);
+      mapper.setMaximumSamplesPerRay(5000);
       rgbTransferFunction.setRange(range[0], range[1]);
       ctVol.setMapper(mapper);
 
@@ -104,7 +108,13 @@ class VTKRotatableCrosshairsExample extends Component {
         volumes: [ctVol],
       });
     };
-
+    const onPixelDataInsertedCallback = numberProcessed => {
+      const percentComplete = Math.floor(
+        (numberProcessed * 100) / this.state.totalFrames
+      );
+      this.setState({ displayPercent: percentComplete })
+    };
+    ctImageDataObject.onPixelDataInserted(onPixelDataInsertedCallback);
     ctImageDataObject.onAllPixelDataInserted(onAllPixelDataInsertedCallback);
   }
 
@@ -224,11 +234,11 @@ class VTKRotatableCrosshairsExample extends Component {
 
   render() {
     if (!this.state.volumes || !this.state.volumes.length) {
-      return <div className="loading"><h4>Loading...</h4></div>;
+      return <div className="loading"><h4>Loading...{this.state.displayPercent}%</h4></div>;
     }
 
     return (
-      <div className="row">
+      <div >
         <div className="container-fluid toolbar-series">
 
           <div className="btn-group-toolbar">
@@ -280,7 +290,7 @@ class VTKRotatableCrosshairsExample extends Component {
             </div>
           </div>
         </div>
-        <div className="row cntr" >
+        <div  >
           <div className="col-sm-4 viewer" >
             <View2D
               volumes={this.state.volumes}
